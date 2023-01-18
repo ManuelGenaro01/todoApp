@@ -1,3 +1,4 @@
+import { DragDropContext } from "@hello-pangea/dnd";
 import Header from "./components/modules/Header";
 import TodoFilter from "./components/modules/TodoFilter";
 import TodoContent from "./components/modules/TodoContent";
@@ -9,6 +10,17 @@ const todoInitialState = JSON.parse(localStorage.getItem("todos")) || [];
 
 const App = () => {
     const [todos, setTodo] = useState(todoInitialState);
+    const handleDragEnd = (result) => {
+        if (!result.destination) return;
+        const startIndex = result.source.index;
+        const endIndex = result.destination.index;
+
+        const copyArray = [...todos];
+        const [removeItem] = copyArray.splice(startIndex, 1);
+        copyArray.splice(endIndex, 0, removeItem);
+
+        setTodo(copyArray);
+    };
 
     useEffect(() => {
         localStorage.setItem("todos", JSON.stringify(todos));
@@ -61,11 +73,13 @@ const App = () => {
             <main className="container mx-auto mt-8 max-w-md px-4">
                 <TodoForm createTodo={createTodo} />
 
-                <TodoContent
-                    todos={filteredTodo()}
-                    removeTodo={removeTodo}
-                    completeTodo={completeTodo}
-                />
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <TodoContent
+                        todos={filteredTodo()}
+                        removeTodo={removeTodo}
+                        completeTodo={completeTodo}
+                    />
+                </DragDropContext>
 
                 <TodoComputed
                     computeTodo={computeTodo}
